@@ -1,0 +1,12 @@
+node_modules/
+dist/
+
+# Secrets: only .env.example is committed
+.env
+.env.*
+!.env.example
+
+# Legacy binary lockfile (bun.lock is the text lockfile and is committed)
+*.lockb
+
+.DS_Store

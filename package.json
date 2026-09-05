@@ -1,0 +1,11 @@
+{
+  "name": "roamwise",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "bun --watch apps/api/src/index.ts",
+    "start": "bun apps/api/src/index.ts",
+    "test": "bun test",
+    "typecheck": "bun run --cwd apps/api typecheck"
+  }
+}

@@ -1,0 +1,19 @@
+# Override: use an Ollama that is already running on your machine instead of the containerised one.
+# Much faster on macOS, where Docker containers cannot use the GPU.
+#
+#   ollama pull qwen2.5:7b        # once
+#   docker compose -f docker-compose.yml -f docker-compose.host-ollama.yml up --build open-webui api
+services:
+  api:
+    depends_on: !reset []
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+
+  open-webui:
+    depends_on: !reset []
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      OLLAMA_BASE_URL: http://host.docker.internal:11434

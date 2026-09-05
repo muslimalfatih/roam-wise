@@ -1,0 +1,96 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Roamwise Places Search",
+    "version": "1.0.0",
+    "description": "Finds real places with Google Places and returns Google Maps links, directions and an embeddable map. Exposed as an OpenAPI tool for Open WebUI."
+  },
+  "paths": {
+    "/api/search": {
+      "post": {
+        "operationId": "search_places",
+        "summary": "Find places to go, eat, drink, stay, shop or visit near a location",
+        "description": "Use this whenever the user asks where to find, go, eat, drink, stay, shop or visit anything: restaurants, cafes, bars, hotels, attractions, gyms, pharmacies and so on. Pass the user's request as `prompt`; the service extracts the kind of place and the location itself. Answer the user with the `markdown` field verbatim: it already contains the numbered list, 'Open in Google Maps' links, 'Get directions' links and an embedded map.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 500,
+                    "description": "The user's request in natural language, e.g. \"good sushi restaurants near Shibuya, Tokyo\""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Places matching the request",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SearchResponse" } } }
+          },
+          "400": { "description": "Invalid request body", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "422": { "description": "The prompt is not a request for places", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "description": "Rate limit exceeded; see the Retry-After header", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "502": { "description": "The LLM or Google Places returned an error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "503": { "description": "The LLM or Google Places is unreachable or out of quota", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SearchResponse": {
+        "type": "object",
+        "required": ["prompt", "intent", "places", "markdown"],
+        "properties": {
+          "prompt": { "type": "string", "description": "The prompt that was searched" },
+          "intent": { "$ref": "#/components/schemas/SearchIntent" },
+          "places": { "type": "array", "items": { "$ref": "#/components/schemas/Place" } },
+          "markdown": { "type": "string", "description": "Ready-to-display answer: numbered list with Google Maps links plus an embedded map" }
+        }
+      },
+      "SearchIntent": {
+        "type": "object",
+        "required": ["searchQuery", "location", "maxResults", "openNow"],
+        "properties": {
+          "searchQuery": { "type": "string", "description": "What kind of place was searched for" },
+          "location": { "type": "string", "description": "Where the search was centred; empty if the user gave no location" },
+          "maxResults": { "type": "integer", "minimum": 1, "maximum": 10 },
+          "openNow": { "type": "boolean" }
+        }
+      },
+      "Place": {
+        "type": "object",
+        "required": ["id", "name", "address", "rating", "reviewCount", "latitude", "longitude", "googleMapsUrl", "directionsUrl", "embedUrl", "embedQuery"],
+        "properties": {
+          "id": { "type": "string", "description": "Google place ID" },
+          "name": { "type": "string" },
+          "address": { "type": "string" },
+          "rating": { "type": ["number", "null"], "description": "Average rating out of 5, or null when unrated" },
+          "reviewCount": { "type": "integer" },
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" },
+          "googleMapsUrl": { "type": "string", "format": "uri", "description": "The place's page on Google Maps" },
+          "directionsUrl": { "type": "string", "format": "uri", "description": "Turn-by-turn directions from the user's current location" },
+          "embedUrl": { "type": "string", "format": "uri", "description": "Keyless embeddable map centred on the place, for an iframe src" },
+          "embedQuery": { "type": "string", "description": "\"lat,lng\" for clients that build their own map embed" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": { "type": "string", "description": "Human-readable reason" },
+          "details": { "type": "array", "items": { "type": "string" }, "description": "Field-level validation messages, when applicable" }
+        }
+      }
+    }
+  }
+}

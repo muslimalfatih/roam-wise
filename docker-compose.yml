@@ -1,0 +1,68 @@
+# Local development stack: local LLM + chat UI + the Roamwise API.
+#   cp .env.example .env   # add GOOGLE_PLACES_API_KEY
+#   docker compose up --build
+# Open WebUI: http://localhost:3000   API: http://localhost:3001
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    # Linux with an NVIDIA GPU: uncomment to run the model on the GPU.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # One-shot job: downloads the model on first run so `docker compose up` is all that is needed.
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["ollama", "pull"]
+    command: ["${OLLAMA_MODEL:-qwen2.5:7b}"]
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      # Local demo only: skips the sign-up screen. Remove for any shared deployment.
+      WEBUI_AUTH: "false"
+    volumes:
+      - open-webui:/app/backend/data
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      ollama-pull:
+        condition: service_completed_successfully
+    # All knobs come from .env; the three below are pinned to the Docker network layout.
+    env_file: .env
+    environment:
+      PORT: "3001"
+      OLLAMA_BASE_URL: http://ollama:11434
+      CORS_ORIGINS: http://localhost:3000
+
+volumes:
+  ollama:
+  open-webui:

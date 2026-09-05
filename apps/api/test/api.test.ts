@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
 // The app validates its environment on import, so give it the minimum it needs first.
-process.env.GOOGLE_PLACES_API_KEY ??= "test-key";
+process.env.LLM_PROVIDER = "ollama";
+process.env.GOOGLE_PLACES_API_KEY ||= "test-key"; // ||= because a blank value in ./.env is an empty string, not undefined
 process.env.RATE_LIMIT_MAX = "3";
 process.env.API_KEY = "test-bearer-token";
 

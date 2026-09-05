@@ -21,8 +21,9 @@ export const search = new Elysia({ prefix: "/api" })
 
     const { prompt } = request.data;
     const intent = await parseIntent(prompt);
+    // Logged before the Google call so a failed lookup still shows what the LLM understood.
+    console.info(JSON.stringify({ event: "search", intent }));
     const places = await searchPlaces(intent);
-    console.info(JSON.stringify({ event: "search", intent, results: places.length }));
 
     const response: SearchResponse = { prompt, intent, places, markdown: toMarkdown(intent, places) };
     return response;

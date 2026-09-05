@@ -11,6 +11,7 @@ const limiter = createRateLimiter(config.RATE_LIMIT_MAX);
 export const app = new Elysia()
   .use(cors({ origin: config.CORS_ORIGINS, methods: ["GET", "POST"], allowedHeaders: ["content-type", "authorization"] }))
   .onRequest(({ request, server, set }) => {
+    if (request.method === "OPTIONS") return; // CORS preflights are answered by the cors plugin and should not spend the client's budget
     // Behind a proxy (Railway, Fly, nginx) the client IP arrives in x-forwarded-for; otherwise use the socket.
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -52,5 +53,5 @@ export const app = new Elysia()
 
 if (import.meta.main) {
   app.listen(config.PORT);
-  console.log(`Roamwise API listening on http://localhost:${config.PORT} (LLM provider: ${config.LLM_PROVIDER})`);
+  console.info(`Roamwise API listening on http://localhost:${config.PORT} (LLM provider: ${config.LLM_PROVIDER})`);
 }

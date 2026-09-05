@@ -9,7 +9,7 @@ Return ONLY a JSON object with exactly these fields:
 - "searchQuery": the kind of place plus any qualifiers (cuisine, vibe, price, purpose). Never put the location here.
 - "location": the city, area or landmark to search around, exactly as the user wrote it. Use "" if none was given.
 - "maxResults": integer 1-10. Use 5 unless the user asks for a specific number.
-- "openNow": true only if the user asks for places that are open right now.
+- "openNow": true only if the user explicitly asks for places that are open right now ("open now", "currently open", "right now"). "near me" or "nearby" does not mean open now.
 
 Example
 User: Find quiet coffee shops near Seminyak, Bali, suitable for working

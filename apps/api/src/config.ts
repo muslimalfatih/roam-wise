@@ -20,10 +20,13 @@ const Env = z
       .transform((value) => value || undefined),
 
     LLM_PROVIDER: z.enum(["ollama", "groq"]).default("ollama"),
-    OLLAMA_BASE_URL: z.url().default("http://localhost:11434"),
+    OLLAMA_BASE_URL: z
+      .url()
+      .default("http://localhost:11434")
+      .transform((url) => url.replace(/\/+$/, "")),
     OLLAMA_MODEL: z.string().default("qwen2.5:7b"),
     GROQ_API_KEY: z.string().optional(),
-    GROQ_MODEL: z.string().default("llama-3.3-70b-versatile"),
+    GROQ_MODEL: z.string().default("openai/gpt-oss-120b"),
 
     GOOGLE_PLACES_API_KEY: z
       .string({ error: "GOOGLE_PLACES_API_KEY is required" })

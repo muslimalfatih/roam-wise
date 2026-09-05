@@ -7,8 +7,9 @@ const TEXT_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText";
 
 /**
  * The field mask is both the only data we receive and the only data we are
- * billed for. id, displayName, formattedAddress, location and googleMapsUri sit
- * in the "Pro" SKU; rating and userRatingCount lift the call to "Enterprise".
+ * billed for (Google charges the highest SKU among the requested fields):
+ * id is "Essentials"; displayName, formattedAddress, location and googleMapsUri
+ * are "Pro"; rating and userRatingCount lift the call to "Enterprise".
  * Drop those two lines to pay the lower tier.
  */
 const FIELD_MASK = [
